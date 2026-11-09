@@ -139,6 +139,50 @@ except Exception as e:
     st.error(f"Unable to load dataset: {e}")
     st.stop()
 
+@st.cache_data(ttl=300)
+def load_local_data():
+
+    local_data = pd.read_csv("Cuba_data.csv")
+
+    # Clean column names
+    local_data.columns = (
+        local_data.columns
+        .str.strip()
+        .str.lower()
+    )
+
+    # Rename columns to match dashboard conventions
+    local_data = local_data.rename(columns={
+        "offense type": "topic",
+        "metric type": "metric",
+        "total per agency": "value",
+        "source": "source_name",
+        "url": "source_url"
+    })
+
+    # Add category
+    local_data["category"] = "Crime Statistics"
+
+    # Clean geography
+    local_data["geography"] = (
+        local_data["geography"]
+        .astype("string")
+        .str.strip()
+    )
+
+    # Convert numeric columns
+    local_data["year"] = pd.to_numeric(
+        local_data["year"], errors="coerce"
+    )
+
+    local_data["value"] = pd.to_numeric(
+        local_data["value"], errors="coerce"
+    )
+
+    return local_data
+
+
+local_crime_df = load_local_data()
 
 # ==================================================
 # CHECK DATASET
@@ -434,15 +478,27 @@ if page == "Project Introduction":
 
     col1, col2, col3 = st.columns(3)
 
+    # Count unique years from both data files
+    combined_years = pd.concat(
+        [
+            pd.to_numeric(df["year"], errors="coerce"),
+            pd.to_numeric(local_crime_df["year"], errors="coerce")
+        ],
+        ignore_index=True
+    ).dropna().nunique()
     with col1:
-        st.metric("Total Records", len(df))
+        st.metric("Total Records", len(df) + len(local_crime_df))
 
     with col2:
-        st.metric("Data Categories", df["category"].nunique())
+        st.metric(
+            "Data Categories",
+            pd.concat(
+                [df["category"], local_crime_df["category"]]
+            ).nunique()
+        )
 
     with col3:
-        st.metric("Years Available", df["year"].nunique())
-
+        st.metric("Years Available", combined_years)
     st.divider()
 
     # PROJECT OBJECTIVES
@@ -532,53 +588,6 @@ if page == "Project Introduction":
 
     st.divider()
 
-    # DATA QUALITY OVERVIEW
-    st.subheader("Data Quality Overview")
-
-    # Count missing values, including empty text cells.
-    cleaned_df = df.replace(r"^\s*$", pd.NA, regex=True)
-    missing_values = int(cleaned_df.isna().sum().sum())
-
-    # Count records without a source URL.
-    if "source_url" in df.columns:
-        missing_sources = int(
-            cleaned_df["source_url"].isna().sum()
-        )
-    else:
-        missing_sources = len(df)
-
-    # Count records flagged for verification.
-    if "status" in df.columns:
-        verification_records = int(
-            df["status"].astype("string")
-            .str.contains("verif", case=False, na=False)
-            .sum()
-        )
-    else:
-        verification_records = 0
-
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        st.metric("Missing Data Cells", missing_values)
-
-    with col2:
-        st.metric("Missing Source URLs", missing_sources)
-
-    with col3:
-        st.metric(
-            "Records Flagged for Verification",
-            verification_records
-        )
-
-    st.caption(
-        "Data quality counts are calculated directly from "
-        "the currently loaded CSV. Missing information does "
-        "not mean that the actual value is zero."
-    )
-
-    st.divider()
-
     # COMPLETE DATASET
     st.subheader("Complete Project Dataset")
 
@@ -587,8 +596,33 @@ if page == "Project Introduction":
         "currently included in the project."
     )
 
-    with st.expander("View Complete Raw Dataset"):
-        display_table(df)
+    # Combine both project datasets
+    combined_df = pd.concat(
+        [df, local_crime_df],
+        ignore_index=True,
+        sort=False
+    )
+
+    with st.expander("View Complete Project Dataset"):
+        display_table(combined_df)
+
+    # PROJECT SOURCES AND REFERENCES
+    st.divider()
+    st.subheader("Project Sources and References")
+
+    st.write(
+        "The following file contains source links and references "
+        "used for the project."
+    )
+
+    @st.cache_data(ttl=300)
+    def load_source_links():
+        return pd.read_csv("cuba_nm_links.csv")
+
+    links_df = load_source_links()
+
+    with st.expander("View Project Sources and References"):
+        display_table(links_df)
 
 # ==================================================
 # PAGE 2: STATE-WIDE DATA BASELINE
@@ -762,11 +796,17 @@ elif page == "Local Village Analysis":
 
     # EXACT CUBA RECORDS
 
-    local_df = df[
+    cuba_existing_df = df[
         df["geography"].astype(str).str.strip().str.lower()
         == "cuba, new mexico"
     ].copy()
 
+    # Combine existing Cuba records with the new local crime data
+    local_df = pd.concat(
+        [cuba_existing_df, local_crime_df],
+        ignore_index=True,
+        sort=False
+    )
     # NEARBY BUT NOT EXACTLY CUBA
 
     nearby_df = df[
@@ -806,6 +846,62 @@ elif page == "Local Village Analysis":
         )
 
     st.divider()
+     # CUBA CRIME STATISTICS GRAPH
+
+    st.subheader("Cuba Crime Statistics by Offense Type")
+
+    crime_chart_df = local_df[
+        local_df["category"].astype(str).str.lower()
+        == "crime statistics"
+    ].copy()
+
+    if not crime_chart_df.empty:
+
+        crime_chart_df["metric"] = (
+            crime_chart_df["metric"]
+            .astype("string")
+            .str.strip()
+        )
+
+        metric_options = sorted(
+            crime_chart_df["metric"].dropna().unique()
+        )
+
+        selected_metric = st.selectbox(
+            "Select Measurement",
+            metric_options,
+            key="cuba_metric"
+        )
+
+        chart_df = crime_chart_df[
+            crime_chart_df["metric"] == selected_metric
+        ].copy()
+
+        fig = px.bar(
+            chart_df,
+            x="topic",
+            y="value",
+            color="year",
+            barmode="group",
+            title=f"Cuba Crime Statistics — {selected_metric}",
+            labels={
+                "topic": "Offense Type",
+                "value": "Reported Value",
+                "year": "Year"
+            }
+        )
+
+        fig.update_layout(
+            xaxis_tickangle=-35,
+            legend_title="Year",
+            plot_bgcolor="white",
+            paper_bgcolor="white"
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+
+    else:
+        st.info("No Cuba-specific crime statistics are available.")
 
     # CUBA SPECIFIC INFORMATION
 
@@ -825,61 +921,63 @@ elif page == "Local Village Analysis":
             "as their geographic area."
         )
 
-        # Topic cards
-        for _, record in local_df.iterrows():
+        with st.expander("View all Cuba-specific records (66)", expanded=False):
 
-            with st.container(border=True):
+            # Topic cards
+            for _, record in local_df.iterrows():
 
-                st.markdown(
-                    f"**{record['topic']}**"
-                )
+                with st.container(border=True):
 
-                st.caption(
-                    f"Category: {record['category']}"
-                )
-
-                if pd.notna(record["year"]):
-                    st.write(
-                        f"Year: {int(record['year'])}"
-                    )
-                else:
-                    st.write("Year: Not reported")
-
-                if pd.notna(record["metric"]):
-                    st.write(
-                        f"Measurement: {record['metric']}"
+                    st.markdown(
+                        f"**{record['topic']}**"
                     )
 
-                if pd.notna(record["value"]):
-                    st.write(
-                        f"Reported value: {record['value']}"
-                    )
-                else:
-                    st.write(
-                        "Reported value: Not available"
+                    st.caption(
+                        f"Category: {record['category']}"
                     )
 
-                if "notes" in local_df.columns:
-                    if pd.notna(record.get("notes")):
-                        st.caption(
-                            f"Notes: {record['notes']}"
+                    if pd.notna(record["year"]):
+                        st.write(
+                            f"Year: {int(record['year'])}"
+                        )
+                    else:
+                        st.write("Year: Not reported")
+
+                    if pd.notna(record["metric"]):
+                        st.write(
+                            f"Measurement: {record['metric']}"
                         )
 
-                if "source_name" in local_df.columns:
-                    if pd.notna(record.get("source_name")):
-                        st.caption(
-                            f"Source: {record['source_name']}"
+                    if pd.notna(record["value"]):
+                        st.write(
+                            f"Reported value: {record['value']}"
+                        )
+                    else:
+                        st.write(
+                            "Reported value: Not available"
                         )
 
-                if "source_url" in local_df.columns:
-                    url = record.get("source_url")
+                    if "notes" in local_df.columns:
+                        if pd.notna(record.get("notes")):
+                            st.caption(
+                                f"Notes: {record['notes']}"
+                            )
 
-                    if pd.notna(url) and str(url).startswith(
-                        ("http://", "https://")
-                    ):
-                        st.markdown(
-                            f"[Open original source]({url})"
-                        )
+                    if "source_name" in local_df.columns:
+                        if pd.notna(record.get("source_name")):
+                            st.caption(
+                                f"Source: {record['source_name']}"
+                            )
+
+                    if "source_url" in local_df.columns:
+                        url = record.get("source_url")
+
+                        if pd.notna(url) and str(url).startswith(
+                            ("http://", "https://")
+                        ):
+                            st.markdown(
+                                f"[Open original source]({url})"
+                            )
 
     st.divider()
 
@@ -943,48 +1041,3 @@ st.caption(
     "Cuba, New Mexico Safety Dashboard | "
     "Educational Group Project"
 )
-
-# 1. Set up the browser tab
-st.set_page_config(
-    page_title="Cuba NM Safety Dashboard",
-    page_icon="🚨",
-    layout="wide"
-)
-
-# 2. Create the Sidebar Navigation Menu
-st.sidebar.title("📌 Navigation")
-page = st.sidebar.radio("Go to:", ["Project Introduction", "State-Wide Data Baseline", "Local Village Analysis"])
-
-# =========================================================================
-# PAGE 1: PROJECT INTRODUCTION
-# =========================================================================
-if page == "Project Introduction":
-    st.title("🚨 Safety, Security & Crime: Cuba, New Mexico")
-    st.subheader("Data-Driven Community Analysis")
-    
-    st.markdown("""
-    Welcome to our team's data analysis platform. This application explores public safety, 
-    crime metrics, and infrastructure security factors affecting New Mexico, with a focus 
-    on the rural community of **Cuba, NM**.
-    """)
-
-# =========================================================================
-# PAGE 2: STATE-WIDE DATA BASELINE
-# =========================================================================
-elif page == "State-Wide Data Baseline":
-    st.title("📊 New Mexico vs. United States Baseline")
-    st.write("This section tracks comparative data sourced from the FBI and CDC.")
-    
-    # Places for Graph 1 and Graph 2
-    st.warning("⏳ Graph 1 Placeholder: New Mexico vs. US Violent Crime Rates goes here.")
-    st.warning("⏳ Graph 2 Placeholder: New Mexico vs. US Firearm Mortality Rates goes here.")
-
-# =========================================================================
-# PAGE 3: LOCAL VILLAGE ANALYSIS
-# =========================================================================
-elif page == "Local Village Analysis":
-    st.title("🏡 Local Impact: Village of Cuba & Sandoval County")
-    st.write("This section focuses on our team's specific local data.")
-    
-    # Place for Graph 3
-    st.warning("⏳ Graph 3 Placeholder: Local Cuba NM / Sandoval County Metric goes here.")
