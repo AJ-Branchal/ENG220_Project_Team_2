@@ -950,7 +950,7 @@ elif page == "Local Village Analysis":
 
                     if pd.notna(record["value"]):
                         st.write(
-                            f"Reported value: {record['value']}"
+                            f"Reported value: {record['value']} {record['unit']}"
                         )
                     else:
                         st.write(
