@@ -1,7 +1,7 @@
 id,category,title,geography,source_name,url,notes
 1,Crime & Safety Statistics,USAFacts: Crime rate in the US (New Mexico page),New Mexico (statewide),USAFacts,https://usafacts.org/answers/what-is-the-crime-rate-in-the-us/state/new-mexico/,Statewide figures; not specific to Cuba
-2,Crime & Safety Statistics,USAFacts: Gun-related deaths by month (New Mexico page),New Mexico (statewide),USAFacts,https://usafacts.org/answers/how-many-people-die-from-gun-related-injuries-in-the-us-each-month/state/new-mexico/,Statewide figures; not specific to Cuba
-3,Crime & Safety Statistics,Sandoval County Detention Center reports,Sandoval County,Sandoval County Government,https://www.sandovalcountynm.gov/departments/detention-center/reports/,County-level; Cuba is in Sandoval County
+2,Crime & Safety Statistics,KFF: Firearm deaths and age-adjusted death rates (2024),New Mexico (statewide),KFF / CDC,https://www.kff.org/state-health-policy-data/state-indicator/firearms-deaths-and-death-rates-per-100000/,Use the 2024 table; statewide figures rather than Cuba-specific
+3,Crime & Safety Statistics,Sandoval County Detention Center: Sexual Assault Policy and Reporting,Sandoval County,Sandoval County Government,https://www.sandovalcountynm.gov/departments/detention-center/reports/,Detention-center policy and reporting information; not countywide sexual-assault incidence
 4,Local Government & Community Resources,Cuba Police Department,Village of Cuba,Village of Cuba,https://www.cubanm.gov/police/,Cuba-specific
 5,Local Government & Community Resources,Village of Cuba Special Audit Findings (May 11 2026),Village of Cuba,Village of Cuba,https://www.cubanm.gov/may-11-2026-village-of-cuba-special-audit-findings/,Cuba-specific
 6,Local Government & Community Resources,Sandoval County Public Records Request,Sandoval County,Sandoval County Government,https://www.sandovalcountynm.gov/public-records-request/,County-level; Cuba is in Sandoval County
