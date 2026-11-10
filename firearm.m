@@ -32,4 +32,7 @@ hold off;
 
 % Year: 2024
 % Sources listed in proposal: USAFacts, KFF, and Pew Research Center.
-% Verify the figures against the original sources before publication.
+% Figures verified against KFF State Health Facts, using CDC mortality data:
+% https://www.kff.org/state-health-policy-data/state-indicator/firearms-deaths-and-death-rates-per-100000/
+% Rates are age-adjusted deaths per 100,000 people.
+% Rates cover firearm deaths across causes, not only homicide.
