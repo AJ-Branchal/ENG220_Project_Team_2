@@ -12,7 +12,7 @@ st.set_page_config(
     layout="wide"
 )
 
-CSV_FILE = "cuba_safety_project_data.csv"
+CSV_FILE = "data/cuba_safety_project_data.csv"
 
 # ==================================================
 # CUSTOM DESIGN
@@ -142,7 +142,7 @@ except Exception as e:
 @st.cache_data(ttl=300)
 def load_local_data():
 
-    local_data = pd.read_csv("Cuba_data.csv")
+    local_data = pd.read_csv("data/Cuba_data.csv")
 
     # Clean column names
     local_data.columns = (
@@ -627,7 +627,7 @@ if page == "Project Introduction":
 
     @st.cache_data(ttl=300)
     def load_source_links():
-        return pd.read_csv("cuba_nm_links.csv")
+        return pd.read_csv("data/cuba_nm_links.csv")
 
     links_df = load_source_links()
 
@@ -939,7 +939,7 @@ elif page == "Local Village Analysis":
             "as their geographic area."
         )
 
-        with st.expander("View all Cuba-specific records ({len(local_df)})", expanded=False):
+        with st.expander(f"View all Cuba-specific records ({len(local_df)})", expanded=False):
 
             # Topic cards
             for _, record in local_df.iterrows():
