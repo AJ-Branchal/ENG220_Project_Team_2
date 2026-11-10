@@ -12,7 +12,7 @@ firearmDeathRates = [26.6, 12.8];
 figure;
 bar(locations, firearmDeathRates);
 
-title('Firearm Death Rates: New Mexico vs. United States');
+title('Age-Adjusted Firearm Death Rates: New Mexico vs. United States (2024)');
 xlabel('Location');
 ylabel('Age-Adjusted Deaths per 100,000 People');
 
