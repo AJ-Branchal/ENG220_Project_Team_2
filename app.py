@@ -163,6 +163,16 @@ def load_local_data():
     # Add category
     local_data["category"] = "Crime Statistics"
 
+    local_data["metric"] = (
+        local_data["metric"].astype("string").str.strip()
+    )
+
+    local_data["unit"] = local_data["metric"].map({
+        "Number": "offenses",
+        "Rate": "offenses per 100,000 inhabitants",
+        "%": "percent of reported offenses"
+    })
+
     # Clean geography
     local_data["geography"] = (
         local_data["geography"]
