@@ -280,7 +280,7 @@ def display_sources(data):
 
 def show_comparison_chart(data, chart_key):
 
-   chart_data = data[
+    chart_data = data[
         data["metric"].astype(str).str.strip() != "Number of listed sources"
     ].dropna(subset=["value"]).copy()
 
@@ -887,7 +887,7 @@ elif page == "Local Village Analysis":
             crime_chart_df["metric"] == selected_metric
         ].copy()
 
-         chart_df = chart_df.dropna(subset=["year", "value"]).copy()
+        chart_df = chart_df.dropna(subset=["year", "value"]).copy()
         chart_df["year_label"] = chart_df["year"].astype(int).astype(str)
 
         value_labels = {
@@ -904,7 +904,7 @@ elif page == "Local Village Analysis":
             title=f"Cuba Crime Statistics — {selected_metric}",
             labels={
                 "topic": "Offense Type",
-                "value":  value_labels[selected_metric],
+                "value":  value_labels.get(selected_metric, "Reported value"),
                 "year_label": "Year"
             }
         )
@@ -939,7 +939,7 @@ elif page == "Local Village Analysis":
             "as their geographic area."
         )
 
-        with st.expander("View all Cuba-specific records (66)", expanded=False):
+        with st.expander("View all Cuba-specific records ({len(local_df)})", expanded=False):
 
             # Topic cards
             for _, record in local_df.iterrows():
