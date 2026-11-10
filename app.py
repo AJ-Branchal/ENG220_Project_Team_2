@@ -270,9 +270,9 @@ def display_sources(data):
 
 def show_comparison_chart(data, chart_key):
 
-    chart_data = data.dropna(
-        subset=["value"]
-    ).copy()
+   chart_data = data[
+        data["metric"].astype(str).str.strip() != "Number of listed sources"
+    ].dropna(subset=["value"]).copy()
 
     if chart_data.empty:
         st.info(
