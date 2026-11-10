@@ -27,7 +27,10 @@ set(gca, 'XTickLabel', offenses, 'FontSize', 11);
 xtickangle(30);
 xlabel('Offense Type', 'FontSize', 12);
 ylabel('Number of Offenses', 'FontSize', 12);
-title('Reported Crimes by Type in Cuba, New Mexico (2018-2020)', 'FontSize', 14);
+title({
+    'Reported Crimes by Type in Cuba, New Mexico (2018-2020)'
+    '2020 source shows January-October entries only; incomplete-year coverage'
+}, 'FontSize', 14);
 legend(string(years), 'Location', 'northeast');
 grid on;
 box off;

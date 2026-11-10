@@ -163,6 +163,16 @@ def load_local_data():
     # Add category
     local_data["category"] = "Crime Statistics"
 
+    local_data["metric"] = (
+        local_data["metric"].astype("string").str.strip()
+    )
+
+    local_data["unit"] = local_data["metric"].map({
+        "Number": "offenses",
+        "Rate": "offenses per 100,000 inhabitants",
+        "%": "percent of reported offenses"
+    })
+
     # Clean geography
     local_data["geography"] = (
         local_data["geography"]
@@ -270,9 +280,9 @@ def display_sources(data):
 
 def show_comparison_chart(data, chart_key):
 
-    chart_data = data.dropna(
-        subset=["value"]
-    ).copy()
+   chart_data = data[
+        data["metric"].astype(str).str.strip() != "Number of listed sources"
+    ].dropna(subset=["value"]).copy()
 
     if chart_data.empty:
         st.info(
@@ -877,17 +887,25 @@ elif page == "Local Village Analysis":
             crime_chart_df["metric"] == selected_metric
         ].copy()
 
+         chart_df = chart_df.dropna(subset=["year", "value"]).copy()
+        chart_df["year_label"] = chart_df["year"].astype(int).astype(str)
+
+        value_labels = {
+            "Number": "Reported offenses",
+            "Rate": "Offenses per 100,000 inhabitants",
+            "%": "Percent of reported offenses"
+        }
         fig = px.bar(
             chart_df,
             x="topic",
             y="value",
-            color="year",
+            color="year_label",
             barmode="group",
             title=f"Cuba Crime Statistics — {selected_metric}",
             labels={
                 "topic": "Offense Type",
-                "value": "Reported Value",
-                "year": "Year"
+                "value":  value_labels[selected_metric],
+                "year_label": "Year"
             }
         )
 
@@ -950,7 +968,7 @@ elif page == "Local Village Analysis":
 
                     if pd.notna(record["value"]):
                         st.write(
-                            f"Reported value: {record['value']}"
+                            f"Reported value: {record['value']} {record['unit']}"
                         )
                     else:
                         st.write(
