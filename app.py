@@ -877,17 +877,25 @@ elif page == "Local Village Analysis":
             crime_chart_df["metric"] == selected_metric
         ].copy()
 
+         chart_df = chart_df.dropna(subset=["year", "value"]).copy()
+        chart_df["year_label"] = chart_df["year"].astype(int).astype(str)
+
+        value_labels = {
+            "Number": "Reported offenses",
+            "Rate": "Offenses per 100,000 inhabitants",
+            "%": "Percent of reported offenses"
+        }
         fig = px.bar(
             chart_df,
             x="topic",
             y="value",
-            color="year",
+            color="year_label",
             barmode="group",
             title=f"Cuba Crime Statistics — {selected_metric}",
             labels={
                 "topic": "Offense Type",
-                "value": "Reported Value",
-                "year": "Year"
+                "value":  value_labels[selected_metric],
+                "year_label": "Year"
             }
         )
 
