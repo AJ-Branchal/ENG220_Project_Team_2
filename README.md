@@ -1,7 +1,6 @@
 # Cuba, New Mexico Safety Dashboard
 
-**Live app:** [add your Streamlit link here]
-
+**Live app:** [https://eng220projectteam2-au3tcy8xdzoqqbbde78fwj.streamlit.app/]
 A Streamlit dashboard that explores public safety, crime metrics, and infrastructure security factors affecting New Mexico, with a focus on the rural community of Cuba, NM.
 
 ## Purpose
@@ -78,12 +77,12 @@ This dashboard is an educational project, not an official government report. Ver
 
 | Member | Role |
 |---|---|
-| Max Brewer | Project Manager – project management and team coordination |
-| Jan Ziglar | Streamlit application development |
-| Rachael Stokes | PowerPoint presentation development |
-| Brooke Morenus | Video presentation development |
-| Sierra Tsosie | Code development |
-| Adam Branchal | Repository management |
+| Max Brewer | Project Manager – project management and team coordination, source verification, research, create project proposal |
+| Jan Ziglar | Streamlit application code development, CSV cleaning |
+| Rachael Stokes | PowerPoint presentation development, on-site photography |
+| Brooke Morenus | Video presentation development, project report creation |
+| Sierra Tsosie | Analysis code development, chart/graph creation |
+| Adam Branchal | Github repository management, presentation scripting |
 
 ## Course
 
